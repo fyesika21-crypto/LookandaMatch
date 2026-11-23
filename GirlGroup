@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Look and Match – My Body Parts</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px 16px 40px;
+    font-family: "Trebuchet MS", Arial, sans-serif;
+    color: #20324d;
+    background: linear-gradient(135deg, #f4f8ff, #fff8e9);
+  }
+  .container { max-width: 1000px; margin: auto; }
+  header { text-align: center; margin-bottom: 22px; }
+  .tag {
+    display: inline-block; padding: 7px 15px; border-radius: 30px;
+    background: #e6f1ff; color: #245a9b; font-weight: 800; font-size: 13px;
+    letter-spacing: .5px;
+  }
+  h1 { margin: 12px 0 6px; color: #183c70; font-size: clamp(27px, 5vw, 38px); }
+  .subtitle { margin: 0; color: #64748b; font-size: 16px; }
+  .instruction {
+    background: white; border: 2px solid #d8e7ff; border-radius: 18px;
+    padding: 18px 20px; margin: 20px 0;
+    box-shadow: 0 5px 16px #315b8a12;
+  }
+  .instruction h2 { margin: 0 0 7px; font-size: 19px; color: #245a9b; }
+  .instruction p { margin: 0; line-height: 1.55; }
+  .sentence-area {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    margin: 18px 0 24px;
+  }
+  .sentence {
+    border: 2px solid #b8d1f3; border-radius: 14px; background: white;
+    padding: 14px 12px; min-height: 76px; display: flex; align-items: center;
+    gap: 10px; cursor: grab; box-shadow: 0 3px 9px #315b8a10;
+    font-size: 16px; font-weight: 700; transition: .18s;
+  }
+  .sentence:active { cursor: grabbing; }
+  .sentence.selected { border-color: #ff9c24; background: #fff6e8; transform: translateY(-2px); }
+  .number {
+    flex: 0 0 32px; height: 32px; display: grid; place-items: center;
+    border-radius: 50%; color: white; background: #2766ad; font-weight: 900;
+  }
+  .sentence small { display:block; color:#8291a7; font-weight:500; margin-top:3px; }
+  .section-title { font-size: 20px; margin: 0 0 12px; color: #244a7c; }
+  .monster-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+  .monster-card {
+    position: relative; background: white; border: 2px solid #c8dcf7;
+    border-radius: 18px; padding: 12px; text-align:center; overflow:hidden;
+    box-shadow: 0 5px 14px #315b8a12; transition: .2s;
+  }
+  .monster-card.drag-over { border: 3px dashed #ff9c24; background:#fffaf0; }
+  .letter {
+    position:absolute; top:10px; left:10px; z-index:2;
+    width:34px; height:34px; border-radius:50%; display:grid; place-items:center;
+    color:white; background:#ff7818; font-size:20px; font-weight:900;
+  }
+  .monster-scene {
+    height: 205px; border-radius: 13px; display:flex; align-items:center;
+    justify-content:center; position:relative; overflow:hidden;
+  }
+  .blue-bg { background:linear-gradient(#e8f7ff,#fff3c9); }
+  .purple-bg { background:linear-gradient(#f5eaff,#ffe4ef); }
+  .green-bg { background:linear-gradient(#e5ffe7,#eff8c9); }
+  .monster { width:150px; height:150px; position:relative; margin-top:28px; }
+  .body {
+    position:absolute; width:116px; height:112px; left:17px; top:28px;
+    border-radius:48% 48% 42% 42%; z-index:2;
+    box-shadow: inset -8px -8px 0 #00000012, inset 7px 6px 0 #ffffff22;
+  }
+  .blue .body { background:#16b7ed; }
+  .purple .body { background:#9b55e9; }
+  .green .body { background:#73c927; }
+  .eye {
+    position:absolute; width:43px; height:49px; top:47px; z-index:4;
+    background:white; border:3px solid #159bd6; border-radius:50%;
+    box-shadow: inset 0 -3px 0 #d9eaff;
+  }
+  .eye:before {
+    content:""; position:absolute; width:20px; height:23px; left:9px; top:10px;
+    background:#34205d; border-radius:50%;
+  }
+  .eye:after {
+    content:""; position:absolute; width:7px; height:7px; left:14px; top:12px;
+    background:white; border-radius:50%;
+  }
+  .one-eye { left:54px; }
+  .purple .eye { top:12px; width:39px; height:45px; border-color:#8c3bd1; }
+  .purple .eye:before { width:18px; height:21px; left:8px; top:9px; }
+  .purple .eye:after { left:12px; top:11px; }
+  .purple .eye.left { left:30px; }
+  .purple .eye.right { left:81px; }
+  .mouth {
+    position:absolute; z-index:5; width:40px; height:24px; left:55px; top:103px;
+    background:#5b174e; border-radius:8px 8px 22px 22px; overflow:hidden;
+  }
+  .mouth:before { content:""; position:absolute; top:0; left:10px; width:9px;height:8px;background:white;border-radius:0 0 5px 5px; }
+  .mouth:after { content:""; position:absolute; top:0; right:9px; width:9px;height:8px;background:white;border-radius:0 0 5px 5px; }
+  .arm { position:absolute; z-index:1; width:27px;height:58px;top:66px;border-radius:20px;background:inherit; }
+  .arm.left { left:0; transform:rotate(-38deg); }
+  .arm.right { right:0; transform:rotate(38deg); }
+  .leg { position:absolute; z-index:1; width:28px;height:25px;top:130px;border-radius:50%;background:inherit; }
+  .leg.left {left:34px}.leg.right{right:34px}
+  .horn { position:absolute; z-index:1; width:25px;height:38px;top:0;border-radius:80% 20% 40% 20%;background:#168ee4; transform:rotate(-20deg); }
+  .horn.left {left:28px}.horn.right{right:28px;transform:scaleX(-1) rotate(-20deg)}
+  .purple .horn { background:#7132b9; width:12px;height:22px;top:17px;left:68px; }
+  .purple .horn.right {left:83px}
+  .green .horn { background:#f05da6; width:24px;height:39px;top:0; }
+  .green .horn.left {left:25px;transform:rotate(-18deg)}
+  .green .horn.right {right:25px;transform:scaleX(-1) rotate(-18deg)}
+  .ear {
+    position:absolute; z-index:3; top:63px; width:36px;height:47px;
+    background:#73c927; border:5px solid #54a91d; border-radius:50%;
+  }
+  .ear:after {content:"";position:absolute;inset:7px 5px;background:#ff9bc6;border-radius:50%}
+  .ear.left {left:-3px;transform:rotate(-25deg)}
+  .ear.right {right:-3px;transform:rotate(25deg)}
+  .orange-ring {
+    position:absolute; z-index:8; border:4px solid #ff9b16; border-radius:50%;
+    pointer-events:none;
+  }
+  .ring-one { width:70px;height:70px;left:40px;top:34px; }
+  .ring-eyes-left {width:54px;height:58px;left:22px;top:4px}
+  .ring-eyes-right {width:54px;height:58px;left:74px;top:4px}
+  .ring-ears-left {width:48px;height:57px;left:-8px;top:57px}
+  .ring-ears-right {width:48px;height:57px;right:-8px;top:57px}
+  .drop-zone {
+    min-height:55px; margin-top:10px; padding:9px;
+    border:2px dashed #b9cce4; border-radius:11px; color:#8796aa;
+    font-size:13px; display:flex; justify-content:center; align-items:center;
+    background:#f8fbff;
+  }
+  .drop-zone.filled { border-style:solid; border-color:#7bb1e8; color:#244a7c; background:#edf6ff; font-weight:700; }
+  .drop-zone.correct { border-color:#2da66b; background:#e9fff2; color:#187447; }
+  .drop-zone.wrong { border-color:#e66b6b; background:#fff0f0; color:#b33d3d; }
+  .actions { display:flex; justify-content:center; flex-wrap:wrap; gap:12px; margin:22px 0 12px; }
+  button {
+    border:0; border-radius:12px; padding:13px 22px; font-size:15px;
+    font-weight:800; cursor:pointer; transition:.18s;
+  }
+  button:hover { transform:translateY(-2px); filter:brightness(1.03); }
+  .check { color:white; background:#2468b5; box-shadow:0 4px 0 #174b87; }
+  .reset { color:#31506f; background:#e5edf7; }
+  #feedback { min-height:32px; text-align:center; font-weight:800; font-size:17px; }
+  .hint { text-align:center; color:#77869a; font-size:13px; margin-top:8px; }
+  footer { text-align:center; color:#8a98aa; font-size:12px; margin-top:28px; }
+  @media(max-width:700px) {
+    .sentence-area { grid-template-columns:1fr; }
+    .sentence { min-height:62px; }
+    .monster-grid { grid-template-columns:1fr; max-width:390px; margin:auto; }
+    .monster-scene { height:190px; }
+  }
+</style>
+</head>
+<body>
+<main class="container">
+  <header>
+    <span class="tag">ENGLISH • GRADE 4</span>
+    <h1>Look and Match!</h1>
+    <p class="subtitle">Let's learn about parts of the body with funny monsters.</p>
+  </header>
+
+  <section class="instruction">
+    <h2>READ AND MATCH</h2>
+    <p>Perhatikan bagian tubuh monster yang dilingkari warna oranye. Bacalah kalimat nomor 1–3, lalu cocokkan dengan gambar monster A, B, atau C. Seret kalimat ke kotak jawaban di bawah gambar yang tepat.</p>
+  </section>
+
+  <h2 class="section-title">1. Choose the sentences</h2>
+  <section class="sentence-area" id="sentenceArea">
+    <div class="sentence" draggable="true" data-id="1" tabindex="0" role="button" aria-label="Kalimat 1: This is my eye">
+      <span class="number">1</span><span>This is my eye.<small>Satu mata</small></span>
+    </div>
+    <div class="sentence" draggable="true" data-id="2" tabindex="0" role="button" aria-label="Kalimat 2: These are my eyes">
+      <span class="number">2</span><span>These are my eyes.<small>Dua mata</small></span>
+    </div>
+    <div class="sentence" draggable="true" data-id="3" tabindex="0" role="button" aria-label="Kalimat 3: I have two ears">
+      <span class="number">3</span><span>I have two ears.<small>Dua telinga</small></span>
+    </div>
+  </section>
+
+  <h2 class="section-title">2. Match with the monsters</h2>
+  <section class="monster-grid">
+    <article class="monster-card" data-monster="A">
+      <span class="letter">A</span>
+      <div class="monster-scene blue-bg">
+        <div class="monster blue">
+          <span class="horn left"></span><span class="horn right"></span>
+          <span class="arm left"></span><span class="arm right"></span>
+          <span class="leg left"></span><span class="leg right"></span>
+          <span class="body"></span>
+          <span class="eye one-eye"></span><span class="mouth"></span>
+          <span class="orange-ring ring-one"></span>
+        </div>
+      </div>
+      <div class="drop-zone" data-answer="1">Drop sentence here</div>
+    </article>
+
+    <article class="monster-card" data-monster="B">
+      <span class="letter">B</span>
+      <div class="monster-scene purple-bg">
+        <div class="monster purple">
+          <span class="horn left"></span><span class="horn right"></span>
+          <span class="arm left"></span><span class="arm right"></span>
+          <span class="leg left"></span><span class="leg right"></span>
+          <span class="body"></span>
+          <span class="eye left"></span><span class="eye right"></span>
+          <span class="mouth"></span>
+          <span class="orange-ring ring-eyes-left"></span><span class="orange-ring ring-eyes-right"></span>
+        </div>
+      </div>
+      <div class="drop-zone" data-answer="2">Drop sentence here</div>
+    </article>
+
+    <article class="monster-card" data-monster="C">
+      <span class="letter">C</span>
+      <div class="monster-scene green-bg">
+        <div class="monster green">
+          <span class="horn left"></span><span class="horn right"></span>
+          <span class="arm left"></span><span class="arm right"></span>
+          <span class="leg left"></span><span class="leg right"></span>
+          <span class="body"></span>
+          <span class="ear left"></span><span class="ear right"></span>
+          <span class="eye one-eye"></span><span class="mouth"></span>
+          <span class="orange-ring ring-ears-left"></span><span class="orange-ring ring-ears-right"></span>
+        </div>
+      </div>
+      <div class="drop-zone" data-answer="3">Drop sentence here</div>
+    </article>
+  </section>
+
+  <div class="actions">
+    <button class="check" id="checkBtn">✓ Check My Answers</button>
+    <button class="reset" id="resetBtn">↻ Try Again</button>
+  </div>
+  <div id="feedback" aria-live="polite"></div>
+  <p class="hint">Tips: Bisa juga ketuk kalimat, lalu ketuk kotak jawaban (cocok untuk HP/tablet).</p>
+  <footer>Happy learning! ⭐</footer>
+</main>
+
+<script>
+  const sentences = [...document.querySelectorAll('.sentence')];
+  const zones = [...document.querySelectorAll('.drop-zone')];
+  const feedback = document.getElementById('feedback');
+  let draggedId = null;
+  let selectedSentence = null;
+
+  function placeSentence(id, zone) {
+    if (!id || !zone) return;
+    // If this sentence was already placed somewhere, return it to the sentence bank.
+    const oldZone = zones.find(z => z.dataset.placed === id);
+    if (oldZone) clearZone(oldZone);
+    // If the target already contains a sentence, return it to the bank.
+    if (zone.dataset.placed) clearZone(zone);
+
+    const sentence = sentences.find(s => s.dataset.id === id);
+    if (!sentence) return;
+    zone.dataset.placed = id;
+    zone.textContent = sentence.querySelector('span:nth-child(2)').childNodes[0].textContent;
+    zone.classList.add('filled');
+    zone.classList.remove('correct', 'wrong');
+    sentence.classList.remove('selected');
+    selectedSentence = null;
+    feedback.textContent = '';
+  }
+
+  function clearZone(zone) {
+    delete zone.dataset.placed;
+    zone.textContent = 'Drop sentence here';
+    zone.classList.remove('filled', 'correct', 'wrong');
+  }
+
+  sentences.forEach(sentence => {
+    sentence.addEventListener('dragstart', event => {
+      draggedId = sentence.dataset.id;
+      event.dataTransfer.setData('text/plain', draggedId);
+      event.dataTransfer.effectAllowed = 'move';
+    });
+    sentence.addEventListener('click', () => {
+      sentences.forEach(s => s.classList.remove('selected'));
+      if (selectedSentence === sentence.dataset.id) {
+        selectedSentence = null;
+      } else {
+        selectedSentence = sentence.dataset.id;
+        sentence.classList.add('selected');
+      }
+    });
+    sentence.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        sentence.click();
+      }
+    });
+  });
+
+  zones.forEach(zone => {
+    zone.addEventListener('dragover', event => {
+      event.preventDefault();
+      zone.closest('.monster-card').classList.add('drag-over');
+    });
+    zone.addEventListener('dragleave', () => {
+      zone.closest('.monster-card').classList.remove('drag-over');
+    });
+    zone.addEventListener('drop', event => {
+      event.preventDefault();
+      zone.closest('.monster-card').classList.remove('drag-over');
+      placeSentence(event.dataTransfer.getData('text/plain') || draggedId, zone);
+      draggedId = null;
+    });
+    zone.addEventListener('click', () => {
+      if (selectedSentence) placeSentence(selectedSentence, zone);
+    });
+  });
+
+  document.getElementById('checkBtn').addEventListener('click', () => {
+    let correct = 0;
+    zones.forEach(zone => {
+      zone.classList.remove('correct', 'wrong');
+      if (!zone.dataset.placed) return;
+      if (zone.dataset.placed === zone.dataset.answer) {
+        correct++;
+        zone.classList.add('correct');
+      } else {
+        zone.classList.add('wrong');
+      }
+    });
+    if (correct === 3) {
+      feedback.textContent = '🎉 Excellent! All answers are correct!';
+      feedback.style.color = '#18834f';
+    } else {
+      feedback.textContent = `You got ${correct} out of 3 correct. Keep trying! 💪`;
+      feedback.style.color = '#b66a12';
+    }
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    zones.forEach(clearZone);
+    sentences.forEach(s => s.classList.remove('selected'));
+    selectedSentence = null;
+    draggedId = null;
+    feedback.textContent = '';
+  });
+</script>
+</body>
+</html>
